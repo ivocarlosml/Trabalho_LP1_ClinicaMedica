@@ -1,4 +1,5 @@
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 
 public class ClinicaMedica {
 
@@ -15,7 +16,6 @@ public class ClinicaMedica {
     public ClinicaMedica(String nome) {
         this.nome = nome;
     }
-
     public String getNome() {
         return nome;
     }
@@ -39,7 +39,7 @@ public class ClinicaMedica {
     private void adicionarPaciente(Paciente paciente) {
         pacientes[totalPacientes] = paciente;
         totalPacientes++;
-        IO.println("Paciente " + paciente.getNome() + " cadastrado com sucesso.");
+        IO.println("\nPaciente " + paciente.getNome() + " cadastrado com sucesso.");
     }
 
     private void adicionarProfissional(Profissional profissional) {
@@ -88,32 +88,10 @@ public class ClinicaMedica {
         }
     }
 
-    public void cadastrarProfissional(String nome, String registroProfissional, String nomeEspecialidade) {
-        Especialidade especialidade = buscarEspecialidadePorNome(nomeEspecialidade);
-
-        if (especialidade == null) {
-            IO.println("Não foi possível cadastrar: especialidade não encontrada.");
-            return;
-        }
-
-        Profissional profissional = new Profissional(nome, registroProfissional, especialidade);
-        cadastrarProfissional(profissional);
-    }
-
     private Paciente buscarPacientePorCpf(String cpf) {
         for (int i = 0; i < totalPacientes; i++) {
             if (pacientes[i].getCpf().equals(cpf)) {
                 return pacientes[i];
-            }
-        }
-
-        return null;
-    }
-
-    private Especialidade buscarEspecialidadePorNome(String nome) {
-        for (int i = 0; i < totalEspecialidades; i++) {
-            if (especialidades[i].getNome().equalsIgnoreCase(nome)) {
-                return especialidades[i];
             }
         }
 
@@ -129,20 +107,7 @@ public class ClinicaMedica {
 
         return null;
     }
-
-    private Consulta buscarConsulta(String registroProfissional, LocalDateTime dataHora) {
-        for (int i = 0; i < totalConsultas; i++) {
-            Consulta c = consultas[i];
-
-            if (c.getProfissional().getRegistroProfissional().equals(registroProfissional)
-                    && c.getDataHora().equals(dataHora)) {
-                return c;
-            }
-        }
-
-        return null;
-    }
-
+ 
     public Consulta agendarConsulta(Paciente paciente, Profissional profissional, LocalDateTime dataHora, String observacoes) {
 
         if (profissional.possuiConsultaNoHorario(dataHora)) {
@@ -155,31 +120,26 @@ public class ClinicaMedica {
             return null;
         }
 
-        Consulta consulta = new Consulta(paciente, profissional, dataHora);
+        Consulta consulta = new Consulta(paciente, profissional, dataHora, observacoes);
 
         adicionarConsulta(consulta);
 
         paciente.adicionarConsulta(consulta);
         profissional.adicionarConsulta(consulta);
 
-        IO.println("Consulta agendada com sucesso para " + paciente.getNome() + " em " + dataHora);
+        consulta.exibir();
 
         return consulta;
     }
 
     public Paciente escolherPaciente() {
 
-        IO.println("\nPacientes disponíveis:");
+        listarPacientes();
 
-        for (int i = 0; i < totalPacientes; i++) {
-            IO.println("[" + (i + 1) + "] "
-                    + pacientes[i].getNome());
-        }
-
-        IO.println("[0] Cadastrar novo paciente\n");
+        IO.println("[0] Cadastrar um novo paciente");
 
         while (true) {
-            IO.print("Escolha o paciente: ");
+            IO.print("Escolha o paciente:");
             String opcao = IO.readln();
 
             if (!opcao.matches("\\d+")) {
@@ -202,21 +162,68 @@ public class ClinicaMedica {
         }
     }
 
-    public Profissional escolherProfissional() {
+    public Especialidade escolherEspecialidade() {
+        IO.println("\nEspecialidades disponíveis:");
 
-        if (totalProfissionais == 0) {
-            IO.println("Nenhum profissional cadastrado.");
+        if (totalEspecialidades == 0) {
+            IO.println("Nenhuma especialidade cadastrada.");
             return null;
         }
 
-        IO.println("\nProfissionais cadastrados:");
+        for (int i = 0; i < totalEspecialidades; i++) {
+            IO.println("[" + (i + 1) + "] "
+                    + especialidades[i].getNome()
+                    + " - "
+                    + especialidades[i].getDescricao());
+        }
+
+        IO.println("\n[0] Voltar");
+
+        while (true) {
+            IO.print("Escolha a especialidade: ");
+            String opcao = IO.readln();
+
+            if (!opcao.matches("\\d+")) {
+                IO.println("Opção inválida!");
+                continue;
+            }
+
+            int numero = Integer.parseInt(opcao);
+
+            if (numero == 0) {
+                return null;
+            }
+
+            if (numero < 1 || numero > totalEspecialidades) {
+                IO.println("Opção inválida!");
+                continue;
+            }
+
+            return especialidades[numero - 1];
+        }
+    }
+
+    public Profissional escolherProfissional(Especialidade especialidade) {
+        IO.println("\nProfissionais de " + especialidade.getNome() + ":");
+
+        int quantidade = 0;
 
         for (int i = 0; i < totalProfissionais; i++) {
-            IO.println("[" + (i + 1) + "] "
-                    + profissionais[i].getNome()
-                    + " | "
-                    + profissionais[i].getEspecialidade().getNome());
+            if (profissionais[i].getEspecialidade() == especialidade) {
+                quantidade++;
+                IO.println("[" + quantidade + "] "
+                        + profissionais[i].getNome()
+                        + " | "
+                        + profissionais[i].getRegistroProfissional());
+            }
         }
+
+        if (quantidade == 0) {
+            IO.println("Nenhum profissional cadastrado para esta especialidade.");
+            return null;
+        }
+
+        IO.println("\n[0] Voltar");
 
         while (true) {
             IO.print("Escolha o profissional: ");
@@ -229,12 +236,26 @@ public class ClinicaMedica {
 
             int numero = Integer.parseInt(opcao);
 
-            if (numero < 1 || numero > totalProfissionais) {
+            if (numero == 0) {
+                return null;
+            }
+
+            if (numero < 1 || numero > quantidade) {
                 IO.println("Opção inválida!");
                 continue;
             }
 
-            return profissionais[numero - 1];
+            int contador = 0;
+
+            for (int i = 0; i < totalProfissionais; i++) {
+                if (profissionais[i].getEspecialidade() == especialidade) {
+                    contador++;
+
+                    if (contador == numero) {
+                        return profissionais[i];
+                    }
+                }
+            }
         }
     }
 
@@ -246,22 +267,27 @@ public class ClinicaMedica {
         consulta.concluir();
     }
 
-    public void concluirConsulta(Profissional profissional) {
+    public void concluirConsultaPorPaciente() {
+        Paciente paciente = escolherPaciente();
+
+        if (paciente == null) {
+            return;
+        }
 
         int quantidade = 0;
 
-        IO.println("\nConsultas do profissional:");
+        IO.println("\nConsultas do paciente:");
 
         for (int i = 0; i < totalConsultas; i++) {
             Consulta consulta = consultas[i];
 
-            if (consulta.getProfissional() == profissional) {
+            if (consulta.getPaciente() == paciente) {
                 quantidade++;
 
                 IO.println("[" + quantidade + "] "
-                        + consulta.getPaciente().getNome()
+                        + consulta.getProfissional().getNome()
                         + " | "
-                        + consulta.getDataHora());
+                        + consulta.getDataHora().format(Config.formatoDataHora));
             }
         }
 
@@ -269,6 +295,8 @@ public class ClinicaMedica {
             IO.println("Nenhuma consulta encontrada.");
             return;
         }
+
+        IO.println("\n[0] Voltar");
 
         while (true) {
             IO.print("Escolha a consulta: ");
@@ -281,53 +309,330 @@ public class ClinicaMedica {
 
             int escolha = Integer.parseInt(opcao);
 
+            if (escolha == 0) {
+                return;
+            }
+
             if (escolha < 1 || escolha > quantidade) {
                 IO.println("Opção inválida!");
                 continue;
             }
 
-            int numero = 1;
+            int numero = 0;
 
             for (int i = 0; i < totalConsultas; i++) {
                 Consulta consulta = consultas[i];
 
-                if (consulta.getProfissional() == profissional) {
+                if (consulta.getPaciente() == paciente) {
+                    numero++;
 
                     if (numero == escolha) {
                         concluirConsulta(consulta);
                         return;
                     }
+                }
+            }
+        }
+    }
+ 
+    public void concluirConsultaPorProfissional() {
+        Profissional profissional;
 
+        while (true) {
+            listarProfissionais();
+
+            if (totalProfissionais == 0) {
+                return;
+            }
+
+            IO.println("\n[0] Voltar");
+            IO.print("Escolha o profissional: ");
+
+            String opcao = IO.readln();
+
+            if (!opcao.matches("\\d+")) {
+                IO.println("Opção inválida!");
+                continue;
+            }
+
+            int numero = Integer.parseInt(opcao);
+
+            if (numero == 0) {
+                return;
+            }
+
+            if (numero < 1 || numero > totalProfissionais) {
+                IO.println("Opção inválida!");
+                continue;
+            }
+
+            profissional = profissionais[numero - 1];
+            break;
+        }
+
+        int quantidade = 0;
+
+
+        IO.println("\nConsultas do profissional:");
+
+        for (int i = 0; i < totalConsultas; i++) {
+            Consulta consulta = consultas[i];
+
+            if (consulta.getProfissional() == profissional) {
+                quantidade++;
+
+                IO.println("[" + quantidade + "] "
+                        + consulta.getPaciente().getNome()
+                        + " | "
+                        + consulta.getDataHora().format(Config.formatoDataHora));
+            }
+        }
+
+        if (quantidade == 0) {
+            IO.println("Nenhuma consulta encontrada.");
+            return;
+        }
+
+        IO.println("\n[0] Voltar");
+
+        while (true) {
+            IO.print("Escolha a consulta: ");
+            String opcao = IO.readln();
+
+            if (!opcao.matches("\\d+")) {
+                IO.println("Opção inválida!");
+                continue;
+            }
+
+            int escolha = Integer.parseInt(opcao);
+
+            if (escolha == 0) {
+                return;
+            }
+
+            if (escolha < 1 || escolha > quantidade) {
+                IO.println("Opção inválida!");
+                continue;
+            }
+
+            int numero = 0;
+
+            for (int i = 0; i < totalConsultas; i++) {
+                Consulta consulta = consultas[i];
+
+                if (consulta.getProfissional() == profissional) {
                     numero++;
+
+                    if (numero == escolha) {
+                        concluirConsulta(consulta);
+                        return;
+                    }
                 }
             }
         }
     }
 
-    public void cancelarConsulta(String registroProfissional, LocalDateTime dataHora) {
-        Consulta consulta = buscarConsulta(registroProfissional, dataHora);
 
-        if (consulta == null) {
-            IO.println("Consulta não encontrada.");
+    public void cancelarConsultaPorPaciente() {
+    Paciente paciente = escolherPaciente();
+
+    if (paciente == null) {
+        return;
+    }
+
+    int quantidade = 0;
+
+    IO.println("\nConsultas do paciente:");
+
+    for (int i = 0; i < totalConsultas; i++) {
+        Consulta consulta = consultas[i];
+
+        if (consulta.getPaciente() == paciente) {
+            quantidade++;
+
+            IO.println("[" + quantidade + "] "
+                    + consulta.getProfissional().getNome()
+                    + " | "
+                    + consulta.getDataHora().format(Config.formatoDataHora));
+        }
+    }
+
+    if (quantidade == 0) {
+        IO.println("Nenhuma consulta encontrada.");
+        return;
+    }
+
+    IO.println("\n[0] Voltar");
+
+    while (true) {
+        IO.print("Escolha a consulta: ");
+        String opcao = IO.readln();
+
+        if (!opcao.matches("\\d+")) {
+            IO.println("Opção inválida!");
+            continue;
+        }
+
+        int escolha = Integer.parseInt(opcao);
+
+        if (escolha == 0) {
             return;
         }
 
-        cancelarConsulta(consulta);
+        if (escolha < 1 || escolha > quantidade) {
+            IO.println("Opção inválida!");
+            continue;
+        }
+
+        int numero = 0;
+
+        for (int i = 0; i < totalConsultas; i++) {
+            Consulta consulta = consultas[i];
+
+            if (consulta.getPaciente() == paciente) {
+                numero++;
+
+                if (numero == escolha) {
+                    cancelarConsulta(consulta);
+                    return;
+                }
+            }
+        }
     }
+}
+ 
+    public void cancelarConsultaPorProfissional() {
+    Profissional profissional;
 
-    public void consultarHorariosDisponiveis(Profissional profissional) {
-        profissional.listarHorariosOcupados();
-    }
+    while (true) {
+        listarProfissionais();
 
-    public void consultarHorariosDisponiveis(String registroProfissional) {
-        Profissional profissional = buscarProfissionalPorRegistro(registroProfissional);
-
-        if (profissional == null) {
-            IO.println("Profissional não encontrado.");
+        if (totalProfissionais == 0) {
             return;
         }
 
-        consultarHorariosDisponiveis(profissional);
+        IO.println("\n[0] Voltar");
+
+        IO.print("Escolha o profissional: ");
+        String opcao = IO.readln();
+
+        if (!opcao.matches("\\d+")) {
+            IO.println("Opção inválida!");
+            continue;
+        }
+
+        int numero = Integer.parseInt(opcao);
+
+        if (numero == 0) {
+            return;
+        }
+
+        if (numero < 1 || numero > totalProfissionais) {
+            IO.println("Opção inválida!");
+            continue;
+        }
+
+        profissional = profissionais[numero - 1];
+        break;
+    }
+
+    int quantidade = 0;
+
+    IO.println("\nConsultas do profissional:");
+
+    for (int i = 0; i < totalConsultas; i++) {
+        Consulta consulta = consultas[i];
+
+        if (consulta.getProfissional() == profissional) {
+            quantidade++;
+
+            IO.println("[" + quantidade + "] "
+                    + consulta.getPaciente().getNome()
+                    + " | "
+                    + consulta.getDataHora().format(Config.formatoDataHora));
+        }
+    }
+
+    if (quantidade == 0) {
+        IO.println("Nenhuma consulta encontrada.");
+        return;
+    }
+
+    IO.println("\n[0] Voltar");
+
+    while (true) {
+        IO.print("Escolha a consulta: ");
+        String opcao = IO.readln();
+
+        if (!opcao.matches("\\d+")) {
+            IO.println("Opção inválida!");
+            continue;
+        }
+
+        int escolha = Integer.parseInt(opcao);
+
+        if (escolha == 0) {
+            return;
+        }
+
+        if (escolha < 1 || escolha > quantidade) {
+            IO.println("Opção inválida!");
+            continue;
+        }
+
+        int numero = 0;
+
+        for (int i = 0; i < totalConsultas; i++) {
+            Consulta consulta = consultas[i];
+
+            if (consulta.getProfissional() == profissional) {
+                numero++;
+
+                if (numero == escolha) {
+                    cancelarConsulta(consulta);
+                    return;
+                }
+            }
+        }
+    }
+}
+
+    public void consultarHorariosOcupados() {
+        listarProfissionais();
+
+        if (totalProfissionais == 0) {
+            return;
+        }
+
+        IO.println("[0] Voltar\n");
+
+        while (true) {
+            IO.print("Escolha o profissional: ");
+            String opcao = IO.readln();
+
+            if (!opcao.matches("\\d+")) {
+                IO.println("Opção inválida!");
+                continue;
+            }
+
+            int numero = Integer.parseInt(opcao);
+
+            if (numero == 0) {
+                return;
+            }
+
+            if (numero < 1 || numero > totalProfissionais) {
+                IO.println("Opção inválida!");
+                continue;
+            }
+
+            Profissional profissional = profissionais[numero - 1];
+
+            IO.println("\nHorários ocupados de " + profissional.getNome() + ":");
+            profissional.listarHorariosOcupados();
+
+            return;
+        }
     }
 
     public void consultarConsultasPorPaciente(String cpfPaciente) {
@@ -341,8 +646,38 @@ public class ClinicaMedica {
         paciente.listarConsultas();
     }
 
+    private void listarPacientes() {
+        IO.println("Pacientes cadastrados:\n");
+
+        if (totalPacientes == 0) {
+            IO.println("Nenhum paciente cadastrado.");
+            return;
+        }
+
+        for (int i = 0; i < totalPacientes; i++) {
+            IO.println("[" + (i + 1) + "] "
+                    + pacientes[i].getNome());
+        }
+    }
+
+    private void listarProfissionais() {
+        IO.println("\nProfissionais cadastrados:");
+
+        if (totalProfissionais == 0) {
+            IO.println("Nenhum profissional cadastrado.");
+            return;
+        }
+
+        for (int i = 0; i < totalProfissionais; i++) {
+            IO.println("[" + (i + 1) + "] "
+                    + profissionais[i].getNome()
+                    + " | "
+                    + profissionais[i].getEspecialidade().getNome());
+        }
+    }
+
     public void consultarPacientesCadastrados() {
-        IO.println("Pacientes cadastrados:");
+        IO.println("Pacientes cadastrados:\n");
 
         if (totalPacientes == 0) {
             IO.println("Nenhum paciente cadastrado.");
@@ -355,7 +690,7 @@ public class ClinicaMedica {
     }
 
     public void consultarProfissionaisCadastrados() {
-        IO.println("Profissionais cadastrados:");
+        IO.println("=== Profissionais cadastrados ===\n");
 
         if (totalProfissionais == 0) {
             IO.println("Nenhum profissional cadastrado.");
@@ -364,6 +699,20 @@ public class ClinicaMedica {
 
         for (int i = 0; i < totalProfissionais; i++) {
             profissionais[i].exibir();
+        }
+    }
+
+    public void consultarEspecialidadesCadastradas() {
+        IO.println("\n----Especialidades cadastradas----\n");
+
+        if (totalEspecialidades == 0) {
+            IO.println("Nenhuma especialidade cadastrada.");
+            return;
+        }
+
+        for (int i = 0; i < totalEspecialidades; i++) {
+            IO.println("[" + (i + 1) + "] "
+                    + especialidades[i].getNome());
         }
     }
 }

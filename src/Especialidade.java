@@ -1,4 +1,4 @@
-class Especialidade {
+public class Especialidade {
 
     private String nome;
     private String descricao;
@@ -9,7 +9,7 @@ class Especialidade {
     }
 
     public void exibir() {
-        IO.println("Especialidade " + nome + " - " + descricao);
+        IO.println("|" + nome + " - " + descricao);
     }
 
     public String getNome() {
