@@ -18,34 +18,44 @@ class Main {
             switch (opcao) {
                 case 1:
                     agendarConsulta(clinica);
+                    voltarMenu();
                     break;
                 case 2:
                     concluirConsulta(clinica);
+                    voltarMenu();
                     break;
                 case 3:
                     cancelarConsulta(clinica);
+                    voltarMenu();
                     break;
                 case 4:
                     cadastrarPaciente(clinica);
+                    voltarMenu();
                     break;
                 case 5:
                     cadastrarProfissional(clinica);
+                    voltarMenu();
                     break;
                 case 6:
                     cadastrarEspecialidade(clinica);
+                    voltarMenu();
                     break;
                 case 7:
                     consultarConsultasPorPaciente(clinica);
+                    voltarMenu();
                     break;
                 case 8:
                     consultarHorariosDisponiveis(clinica);
+                    voltarMenu();
                     break;
                 case 9:
                     clinica.consultarPacientesCadastrados();
+                    voltarMenu();
                     break;
 
                 case 10:
                     clinica.consultarProfissionaisCadastrados();
+                    voltarMenu();
                     break;
 
                 case 0:
@@ -62,7 +72,7 @@ class Main {
 
     public void exibirMenu() {
         IO.println(
-            "========== MENU CLÍNICA MÉDICA ==========\n" +
+            "\n========== MENU CLÍNICA MÉDICA ==========\n\n" +
             "1 - AGENDAR CONSULTA\n" +
             "2 - CONCLUIR CONSULTA\n" +
             "3 - CANCELAR CONSULTA\n" +
@@ -79,7 +89,7 @@ class Main {
     }
 
     public static void cadastrarPaciente(ClinicaMedica clinica) {
-        IO.println("--- Cadastrar Paciente ---");
+        IO.println("\n--- Cadastrar Paciente ---\n");
 
         IO.print("Nome: ");
         String nome = IO.readln();
@@ -110,7 +120,7 @@ class Main {
         IO.print("Nome: ");
         String nome = IO.readln();
 
-        IO.print("Registro profissional (ex: CRM-1234): ");
+        IO.print("Registro Profissional(ex: CRM-1234): ");
         String registro = IO.readln();
 
         IO.print("Nome da especialidade: ");
@@ -119,21 +129,29 @@ class Main {
         clinica.cadastrarProfissional(nome, registro, nomeEspecialidade);
     }
 
+
     public static void agendarConsulta(ClinicaMedica clinica) {
         IO.println("--- Agendar Consulta ---");
 
-        IO.print("CPF do paciente: ");
-        String cpfPaciente = IO.readln();
+        Paciente paciente = clinica.escolherPaciente();
 
-        IO.print("Registro do profissional (ex: CRM-1234): ");
-        String registroProfissional = IO.readln();
+        if (paciente == null) {
+            cadastrarPaciente(clinica);
+            return;
+        }
+
+        Profissional profissional = clinica.escolherProfissional();
+
+        if (profissional == null) {
+            return;
+        }
 
         LocalDateTime dataHora = lerDataHora();
 
         IO.print("Observações: ");
         String observacoes = IO.readln();
 
-        clinica.agendarConsulta(cpfPaciente, registroProfissional, dataHora, observacoes);
+        clinica.agendarConsulta(paciente, profissional, dataHora, observacoes);
     }
 
     public static void cancelarConsulta(ClinicaMedica clinica) {
@@ -150,14 +168,14 @@ class Main {
     public static void concluirConsulta(ClinicaMedica clinica) {
         IO.println("--- Concluir Consulta ---");
 
-        IO.print("Registro do profissional (ex: CRM-1234): ");
-        String registroProfissional = IO.readln();
+        Profissional profissional = clinica.escolherProfissional();
 
-        LocalDateTime dataHora = lerDataHora();
+        if (profissional == null) {
+            return;
+        }
 
-        clinica.concluirConsulta(registroProfissional, dataHora);
+        clinica.concluirConsulta(profissional);
     }
-
     public static void consultarHorariosDisponiveis(ClinicaMedica clinica) {
         IO.println("--- Consultar Horários do Profissional ---");
         IO.print("Registro do profissional (ex: CRM-1234): ");
@@ -171,78 +189,124 @@ class Main {
         String cpfPaciente = IO.readln();
         clinica.consultarConsultasPorPaciente(cpfPaciente);
     }
+public static LocalDateTime lerDataHora() {
 
-    public static LocalDate lerData() {
-        IO.print("Ano de nascimento: ");
-        int ano = Integer.parseInt(IO.readln());
+    LocalDate hoje = LocalDate.now();
 
-        IO.print("Mês de nascimento: ");
-        int mes = Integer.parseInt(IO.readln());
+    while (true) {
 
-        IO.print("Dia de nascimento: ");
-        int dia = Integer.parseInt(IO.readln());
-
-        return LocalDate.of(ano, mes, dia);
-    }
-
-    public static LocalDateTime lerDataHora() {
-        int dia = 0, mes = 0, ano = 0, hora = 0, minuto = 0;
+        int dia;
+        int mes;
 
         while (true) {
-            IO.print("Digite a data (ex:12/12/2026): ");
-            String dataStr = IO.readln(); // Lê a digitação do usuário
+            IO.print("Digite o dia: ");
+            String diaStr = IO.readln();
 
-            dataStr = dataStr.replace("/", ""); 
-
-            if (dataStr.length() == 8) {
-                dia = Integer.parseInt(dataStr.substring(0, 2));
-                mes = Integer.parseInt(dataStr.substring(2, 4));
-                ano = Integer.parseInt(dataStr.substring(4, 8));
-
-
-                if (ano >= 2026 && ano <= 2100) {
-                    
-                    if (mes >= 1 && mes <= 12) {
-                        
-                        int maxDias = 31;
-                        if (mes == 4 || mes == 6 || mes == 9 || mes == 11) {
-                            maxDias = 30;
-                        } else if (mes == 2) {
-                            if ((ano % 4 == 0 && ano % 100 != 0) || (ano % 400 == 0)) {
-                                maxDias = 29;
-                            } else {
-                                maxDias = 28;
-                            }
-                        }
-                        if (dia >= 1 && dia <= maxDias) {
-                            break;
-                        }
-                    }
-                }
+            if (!diaStr.matches("\\d{1,2}")) {
+                IO.println("Dia inválido!");
+                continue;
             }
-            IO.println("Data inválida! Verifique o dia, mês ou ano (Mínimo ano 2026).");
+
+            dia = Integer.parseInt(diaStr);
+
+            if (dia < 1 || dia > 31) {
+                IO.println("Dia inválido!");
+                continue;
+            }
+
+            break;
         }
 
         while (true) {
-            IO.print("Digite o horário (ex:12:20): ");
+            IO.print("Digite o mês: ");
+            String mesStr = IO.readln();
+
+            if (!mesStr.matches("\\d{1,2}")) {
+                IO.println("Mês inválido!");
+                continue;
+            }
+
+            mes = Integer.parseInt(mesStr);
+
+            if (mes < 1 || mes > 12) {
+                IO.println("Mês inválido!");
+                continue;
+            }
+
+            break;
+        }
+
+        int ano = hoje.getYear();
+
+        if (mes < hoje.getMonthValue() ||
+            (mes == hoje.getMonthValue() && dia < hoje.getDayOfMonth())) {
+            ano++;
+        }
+
+        int maxDias = 31;
+
+        if (mes == 4 || mes == 6 || mes == 9 || mes == 11) {
+            maxDias = 30;
+        } else if (mes == 2) {
+            maxDias = 28;
+
+            if (ano % 4 == 0 && (ano % 100 != 0 || ano % 400 == 0)) {
+                maxDias = 29;
+            }
+        }
+
+        if (dia > maxDias) {
+            IO.println("Essa data não existe!");
+            continue;
+        }
+
+        while (true) {
+
+            IO.print("Digite o horário(ex:10:30): ");
             String horaStr = IO.readln();
 
-            horaStr = horaStr.replace(":", "");
-
-            if (horaStr.length() == 4) {
-                hora = Integer.parseInt(horaStr.substring(0, 2));
-                minuto = Integer.parseInt(horaStr.substring(2, 4));
-
-                if (hora >= 0 && hora <= 23 && minuto >= 0 && minuto <= 59) {
-                    break;
-                }
+            if (horaStr.matches("\\d{2}:\\d{2}")) {
+                horaStr = horaStr.replace(":", "");
             }
-            IO.println("Horário inválido! Digite valores reais entre 00:00 e 23:59.");
+
+            if (!horaStr.matches("\\d{4}")) {
+                IO.println("Horário inválido!");
+                continue;
+            }
+
+            int hora = Integer.parseInt(horaStr.substring(0, 2));
+            int minuto = Integer.parseInt(horaStr.substring(2, 4));
+
+            if (hora > 23 || minuto > 59) {
+                IO.println("Horário inválido!");
+                continue;
+            }
+
+            LocalDateTime dataHora = LocalDateTime.of(
+                    ano, mes, dia, hora, minuto
+            );
+
+            IO.println("\nData e horário:");
+            IO.println(String.format(
+                    "%02d/%02d/%04d às %02d:%02d",
+                    dia, mes, ano, hora, minuto
+            ));
+
+            IO.print("Deseja confirmar? (S/N): ");
+
+            if (IO.readln().equalsIgnoreCase("S")) {
+                return dataHora;
+            }
+
+            break;
         }
-
-        return LocalDateTime.of(ano, mes, dia, hora, minuto);
     }
+}
 
+    public static void voltarMenu() {
+        IO.println("\nPressione ENTER para voltar ao menu.");
+        IO.readln();
+    }
 
 
     public void dadosDeTeste() {
@@ -270,9 +334,9 @@ class Main {
         clinica.cadastrarPaciente(paciente3);
         clinica.cadastrarPaciente(paciente4);
 
-        clinica.agendarConsulta(paciente1.getCpf(), profissional1, LocalDateTime.of(2026, 9, 25, 9, 0), "Consulta de rotina");
-        clinica.agendarConsulta(paciente2.getCpf(), profissional1, LocalDateTime.of(2026, 9, 25, 10, 0), "Consulta de retorno");
-        clinica.agendarConsulta(paciente3.getCpf(), profissional2, LocalDateTime.of(2026, 9, 26, 9, 0), "Consulta de rotina");
-        clinica.agendarConsulta(paciente4.getCpf(), profissional2, LocalDateTime.of(2026, 9, 26, 10, 0), "Consulta de retorno");
+        clinica.agendarConsulta(paciente1, profissional1, LocalDateTime.of(2026, 9, 25, 9, 0), "Consulta de rotina");
+        clinica.agendarConsulta(paciente2, profissional1, LocalDateTime.of(2026, 9, 25, 10, 0), "Consulta de retorno");
+        clinica.agendarConsulta(paciente3, profissional2, LocalDateTime.of(2026, 9, 26, 9, 0), "Consulta de rotina");
+        clinica.agendarConsulta(paciente4, profissional2, LocalDateTime.of(2026, 9, 26, 10, 0), "Consulta de retorno");
     }
 }

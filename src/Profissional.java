@@ -70,8 +70,8 @@ class Profissional {
     }
 
     public void exibir() {
-        IO.println("| Profissional: " + nome
-                + " | Registro: " + registroProfissional
+        IO.println("|Nome:" + nome
+                + " | CRM: " + registroProfissional
                 + " | Especialidade: " + especialidade.getNome());
     }
 
