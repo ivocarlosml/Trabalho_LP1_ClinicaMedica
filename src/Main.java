@@ -10,6 +10,7 @@ import java.time.*;
         do {
             exibirMenu();
             opcao = Integer.parseInt(IO.readln());
+            IO.println("");
 
             switch (opcao) {
                 case 1:
@@ -87,10 +88,11 @@ import java.time.*;
         Paciente paciente = clinica.escolherPaciente();
 
         if (paciente == null) {
+            cadastrarPaciente(clinica);
             return;
         }
 
-        Especialidade especialidade = clinica.escolherEspecialidade();
+        Especialidade especialidade = clinica.escolherEspecialidade(false);
 
         if (especialidade == null) {
             return;
@@ -194,7 +196,7 @@ import java.time.*;
         Especialidade especialidade;
 
         while (true) {
-            especialidade = clinica.escolherEspecialidade();
+            especialidade = clinica.escolherEspecialidade(true);
 
             if (especialidade != null) {
                 break;
@@ -210,10 +212,10 @@ import java.time.*;
 
     public static void consultarConsultasPorPaciente(ClinicaMedica clinica) {
         IO.println("--- Consultar Consultas do Paciente ---");
-        IO.print("CPF do paciente: ");
-        String cpfPaciente = IO.readln();
+        IO.print("Nome do Paciente: ");
+        String nomePaciente = IO.readln();
 
-        clinica.consultarConsultasPorPaciente(cpfPaciente);
+        clinica.consultarConsultasPorPaciente(nomePaciente);
     }
 
     public static void consultarHorariosOcupados(ClinicaMedica clinica) {

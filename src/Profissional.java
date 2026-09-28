@@ -55,17 +55,18 @@ class Profissional {
     }
 
     public void listarHorariosOcupados() {
-        IO.println("Horários ocupados do profissional " + nome + ":");
+        IO.println("Horários ocupados do profissional " + nome + ":\n");
         boolean encontrouAlgum = false;
         for (int i = 0; i < totalConsultas; i++) {
             Consulta c = consultas[i];
             if (c.getStatus() != StatusConsulta.CANCELADA) {
-                IO.println(" - " + c.getDataHora());
+                IO.println("Paciente: " + c.getPaciente().getNome()
+                        + " | "+ c.getDataHora().format(Config.formatoDataHora));
                 encontrouAlgum = true;
+                }
             }
-        }
-        if (!encontrouAlgum) {
-            IO.println("Nenhum horário ocupado.");
+            if (!encontrouAlgum) {
+                IO.println("Nenhum horário ocupado.");
         }
     }
 
