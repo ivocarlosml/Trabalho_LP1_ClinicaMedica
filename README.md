@@ -1,4 +1,4 @@
-#SISTEMA DE CLÍNICA MÉDICA
+# SISTEMA DE CLÍNICA MÉDICA
 
 ## 1. Descrição do problema
 
@@ -115,7 +115,7 @@ Principais métodos:
 
 ### 4.4 Especialidade
 
-A classe `Especialidade` representa uma especialidade médica oferecida pela clínica (por exemplo, Cardiologia ou Pediatria).
+A classe `Especialidade` representa uma especialidade médica oferecida pela clínica (por exemplo, Cardiologia ou Pediatria) que só existirá caso tenha algum médico daquela especialidade lá. 
 
 Possui os atributos:
 
@@ -175,9 +175,9 @@ Possui os atributos estáticos:
 * `qtdProfissionais`;
 * `formatoDataHora`.
 
-Os quatro primeiros definem o tamanho dos arrays usados no sistema. O atributo `formatoDataHora` define o formato de data e hora utilizado nas informações digitadas pelo usuário, e o método `lerDataHora()` centraliza a leitura desses dados.
+Os quatro primeiros definem o tamanho dos arrays usados no sistema. O atributo `formatoDataHora` define o formato de data e hora utilizado nas informações digitadas pelo usuário, e o método `lerDataHora()` ajusta para o formato escolhido a leitura desses dados.
 
-Além das classes acima, a classe `Main` contém o menu executado no terminal e os dados de teste. Por ser apenas a interface com o usuário, ela não é representada no diagrama de classes.
+Além das classes acima, a classe `Main` contém o menu executado no terminal e os dados de teste. Por ser apenas a interface de interação com o usuário, ela não é representada no diagrama de classes.
 
 ## 5. Relacionamentos entre as classes
 
@@ -203,9 +203,8 @@ As cardinalidades utilizadas são:
 
 ## 6. Regras de negócio
 
-O sistema possui regras para representar o funcionamento básico de uma clínica médica.
-
-Entre as principais regras estão:
+Para um bom funcionamento clínica é necessário algumas regras de negócio.
+Dentre elas:
 
 * Não é permitido agendar uma consulta para um paciente inexistente;
 * Um profissional não pode possuir duas consultas no mesmo horário;
@@ -217,24 +216,20 @@ Entre as principais regras estão:
 * Não é permitido concluir uma consulta que já foi cancelada;
 * O horário de uma consulta cancelada volta a ficar disponível para o profissional;
 * A quantidade de cadastros e de consultas respeita os limites definidos na classe `Config`;
-* Os atributos das classes são privados, sendo acessados por meio de métodos apropriados.
 
-Essas regras permitem que os objetos mantenham informações relacionadas de forma coerente e evitam que os dados sejam alterados diretamente de maneira indiscriminada.
+Essas regras são essenciais para um bom funcionamento do sistema. 
 
 ## 7. Dificuldades encontradas durante o desenvolvimento
 
 Durante o desenvolvimento do projeto, uma das principais dificuldades foi organizar as responsabilidades entre as classes, evitando concentrar toda a lógica na `ClinicaMedica`. A solução adotada foi manter cada regra na classe que conhece os dados envolvidos (o conflito de horários em `Profissional`, o controle de estado em `Consulta`) e deixar para a `ClinicaMedica` apenas a coordenação das operações que envolvem mais de um objeto.
 
-Outra dificuldade foi trabalhar sem o uso de `List`. Como os dados são armazenados em arrays de tamanho fixo, foi necessário controlar manualmente a quantidade de posições preenchidas por meio de contadores. Para que o aumento da capacidade do sistema não exigisse alterações em vários arquivos, os tamanhos foram centralizados na classe `Config`.
+Outra dificuldade foi trabalhar sem o uso de `List`. Porém, com o uso da classe`Config` logo o problema foi resolvido.
 
 Também foi necessário definir como localizar os objetos sem utilizar um atributo `id`. A solução foi realizar a busca pelo nome, permitindo digitar apenas parte dele, e exibir as opções encontradas em uma lista numerada. Dessa forma, o sistema consegue lidar com pessoas de nomes parecidos, e oferece ainda a opção de cadastrar um paciente no momento do agendamento caso ele ainda não exista.
 
-Durante os testes, foram utilizados recursos de depuração para acompanhar a execução do programa, identificar erros e verificar o comportamento dos objetos e de seus relacionamentos, incluindo a análise das mensagens do compilador e da aba de problemas do editor.
+Uma outra dificuldade foi em relação a limitação, pois algumas funcionalidades tiveram que ser adicionadas para o programa, a qualquer erro do usuario, não travar. A organização das diversas funções que tiveram que ser utilizadas também acabou atrapalhando, pois ao dar um erro, ficava dificil saber porquais motivos e o que tava dando errado. Além disso, a falta de uma equipe para fazer junto o trabalho contribuiu para a demora na entrega do sistema.
 
-Erros de compilação:
-Ao longo do projeto surgiram erros do tipo `cannot find symbol`, causados principalmente pela falta do `import java.time.*` nas classes que utilizam `LocalDate` e `LocalDateTime`, pela diferença entre o nome do arquivo e o nome de uma classe `public`, e pela mistura de versões diferentes dos arquivos após a remoção do `id` das classes.
-
-> **[PREENCHER]** Descrever aqui em qual método a recursividade foi utilizada e por que ela é coerente com o problema, evitando uma implementação artificial apenas para atender ao requisito do projeto.
+Também acabei não me atentando a usar recurvidade, pois ficaria somente para cumprir tabela.
 
 ## 8. Como executar
 
